@@ -800,6 +800,7 @@ sleep 2
 echo "/send binaries/checkra1n-kpf-pongo" | "$dir"/pongoterm
 echo "modload" | "$dir"/pongoterm
 echo "kpf" | "$dir"/pongoterm
+echo "launchd /jbin/launchd" | "$dir"/pongoterm
 echo "dtpatch $fs" | "$dir"/pongoterm
 echo "fuse lock" | "$dir"/pongoterm
 echo "xargs $boot_args keepsyms=1 debug=0x2014e" | "$dir"/pongoterm

@@ -648,7 +648,12 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     if [ "$tweaks" = "1" ]; then
         if [ -z "$semi_tethered" ]; then
             #remote_cmd "snaputil -n com.apple.os.update-$active rom.apple.os.update-$active /mnt1 || true"
-            remote_cmd "mv /mnt1/sbin/launchd /mnt1/sbin/launch2"
+            #remote_cmd "mv /mnt1/sbin/launchd /mnt1/sbin/launch2"
+            remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak || true"
+            remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw"
+            remote_cmd "rm -rf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache"
+            remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache -M /mnt6/$active/System/Library/Caches/apticket.der"
+            remote_cmd "rm -rf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw"
         fi
     fi
 

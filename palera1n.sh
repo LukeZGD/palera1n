@@ -652,6 +652,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache work/kernelcache
             remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak || true"
             remote_cmd "rm -rf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache"
+            python3 -m pyimg4 img4 extract -i work/kernelcache -o work/kcache.raw
             if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
                 python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
             else

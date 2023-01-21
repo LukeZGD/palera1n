@@ -649,11 +649,25 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         if [ -z "$semi_tethered" ]; then
             #remote_cmd "snaputil -n com.apple.os.update-$active rom.apple.os.update-$active /mnt1 || true"
             #remote_cmd "mv /mnt1/sbin/launchd /mnt1/sbin/launch2"
+            remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache work/kernelcache
             remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak || true"
-            remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw"
             remote_cmd "rm -rf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache"
-            remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache -M /mnt6/$active/System/Library/Caches/apticket.der"
-            remote_cmd "rm -rf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw"
+            if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
+                python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
+            else
+                python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
+            fi
+            
+            sleep 1
+            
+            if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
+                python3 -m pyimg4 im4p create -i work/kcache.raw -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
+            else
+                python3 -m pyimg4 im4p create -i work/kcache.raw -o work/kcache.im4p -f krnl --lzss
+            fi
+            remote_cp work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
+            remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache -M /mnt6/$active/System/Library/Caches/apticket.der"
+            remote_cmd "rm -rf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p"
         fi
     fi
 

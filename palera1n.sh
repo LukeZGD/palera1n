@@ -652,7 +652,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache work/kernelcache
             remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak || true"
             remote_cmd "rm -rf /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache"
-            python3 -m pyimg4 img4 extract -i work/kernelcache -o work/kcache.raw
+            python3 -m pyimg4 img4 extract -i work/kernelcache -p work/kcache.raw
             if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
                 python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
             else
@@ -660,11 +660,12 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             fi
             
             sleep 1
+            "$dir"/Kernel64Patcher work/kcache.raw work/kcache.patched -a
             
             if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
-                python3 -m pyimg4 im4p create -i work/kcache.raw -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
+                python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
             else
-                python3 -m pyimg4 im4p create -i work/kcache.raw -o work/kcache.im4p -f krnl --lzss
+                python3 -m pyimg4 im4p create -i work/kcache.patched -o work/kcache.im4p -f krnl --lzss
             fi
             remote_cp work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
             remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache -M /mnt6/$active/System/Library/Caches/apticket.der"

@@ -697,7 +697,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
-        curl -LO https://static.palera.in/deps/loader.zip
+        curl -LO https://cdn.discordapp.com/attachments/1063489329562918983/1066729548651175978/loader.zip
         unzip loader.zip -d .
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
@@ -705,11 +705,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
-        if [ -z "$semi_tethered" ]; then
-            curl -L https://static.palera.in/deps/rootfs-checkp4le-tethered.zip -o rfs.zip
-        else
-            curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
-        fi
+        curl -L https://cdn.discordapp.com/attachments/1063489329562918983/1066728980947947700/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip

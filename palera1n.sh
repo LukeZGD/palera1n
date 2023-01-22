@@ -705,7 +705,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
-        curl -L https://cdn.discordapp.com/attachments/1063489329562918983/1066728980947947700/rootfs.zip -o rfs.zip
+        curl -L https://cdn.discordapp.com/attachments/1028398976640229380/1066740169262235748/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip

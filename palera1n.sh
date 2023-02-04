@@ -697,15 +697,16 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
-        curl -LO https://cdn.discordapp.com/attachments/1063489329562918983/1066729548651175978/loader.zip
-        unzip loader.zip -d .
+        echo "[*] Downloading loader"
+        curl -LO https://static.palera.in/artifacts/loader/rootful/palera1n.ipa
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
         rm -rf palera1n.zip loader.zip palera1n.ipa Payload
         
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
-        curl -L https://cdn.discordapp.com/attachments/1028398976640229380/1066740169262235748/rootfs.zip -o rfs.zip
+        echo "[*] Downloading jbinit files"
+        curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip

@@ -3,6 +3,7 @@
     <p>checkp4le</p>
 </h1>
 <h3 align="center">A fork of palera1n using checkra1n to boot, to re-enable SEP on A10</h3>
+<h4 align="center">Tethered does NOT boot at the moment, I am working on that.</h4>
 <p align="center">
     <strong><a href="CHANGELOG.md">Change Log</a></strong>
     •

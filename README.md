@@ -2,6 +2,7 @@
     <img src="https://avatars.githubusercontent.com/u/114239186?s=100&v=4" alt="palera1n logo">
     <p>checkp4le</p>
 </h1>
+<h1>DEPRECATED in place of palera1n-c, as it uses the same kpf. Please use that over this, as it achieves the same functionality</h1>
 <h3 align="center">A fork of palera1n using checkra1n to boot, to re-enable SEP on A10</h3>
 <h4 align="center">Tethered does NOT boot at the moment, I am working on that.</h4>
 <p align="center">

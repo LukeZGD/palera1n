@@ -1,0 +1,14 @@
+15,21d14
+< # Check for pyimg4
+< if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
+<     echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
+<     read -n 1 -s
+<     python3 -m pip install pyimg4
+< fi
+< 
+218,219c211,212
+< python3 -m pyimg4 im4p create -i work/ramdisk.dmg -o work/ramdisk.im4p -f rdsk
+< python3 -m pyimg4 img4 create -p work/ramdisk.im4p -m work/IM4M -o sshramdisk/ramdisk.img4
+---
+> ../venv/bin/python3 -m pyimg4 im4p create -i work/ramdisk.dmg -o work/ramdisk.im4p -f rdsk
+> ../venv/bin/python3 -m pyimg4 img4 create -p work/ramdisk.im4p -m work/IM4M -o sshramdisk/ramdisk.img4

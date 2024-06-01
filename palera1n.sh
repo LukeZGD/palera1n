@@ -10,6 +10,25 @@ cd logs
 touch "$log"
 cd ..
 
+if [[ ! -s "ramdisk/sshrd.sh" ]]; then
+    if [[ ! -d .git ]]; then
+        echo "[-] Error: not git clone"
+        exit 1
+    fi
+    git submodule update --init --force --recursive
+fi
+
+if [[ $(shasum -a 1 ramdisk/sshrd.sh | awk '{print $1}') != '448a02e73caa6318d8bae73228a6f1063b1ef285' ]]; then
+    git submodule update --init --force --recursive
+    pushd ramdisk
+    git reset --hard
+    patch sshrd.sh < ../sshrd.patch
+    popd
+fi
+
+cp binaries/Darwin/gaster ramdisk/Darwin
+cp binaries/Linux/gaster ramdisk/Linux
+
 {
 
 echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@"
@@ -53,7 +72,7 @@ step() {
 print_help() {
     cat << EOF
 Usage: $0 [Options] [ subcommand | iOS version ]
-iOS 15.0-16.2 jailbreak tool for checkm8 devices
+iOS 15.X jailbreak tool for checkm8 devices
 
 Options:
     --help              Print this help
@@ -164,7 +183,7 @@ _info() {
     if [ "$1" = 'recovery' ]; then
         echo $("$dir"/irecovery -q | grep "$2" | sed "s/$2: //")
     elif [ "$1" = 'normal' ]; then
-        echo $("$dir"/ideviceinfo | grep "$2: " | sed "s/$2: //")
+        echo $("$dir"/ideviceinfo -s | grep "$2: " | sed "s/$2: //")
     fi
 }
 
@@ -262,15 +281,13 @@ _dfuhelper() {
     fi
     echo "[*] Press any key when ready for DFU mode"
     read -n 1 -s
-    step 3 "Get ready"
-    step 4 "$step_one" &
-    sleep 3
-    "$dir"/irecovery -c "reset" &
+    step 2 "Get ready"
+    step 9 "$step_one" &
     wait
     if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-        step 10 'Release side button, but keep holding volume down'
+        step 9 'Release side button, but keep holding volume down'
     else
-        step 10 'Release power button, but keep holding home button'
+        step 9 'Release power button, but keep holding home button'
     fi
     sleep 1
     
@@ -336,17 +353,30 @@ if [ -e "$dir"/gaster ]; then
 fi
 
 if [ ! -e "$dir"/gaster ]; then
-    curl -sLO https://static.palera.in/deps/gaster-"$os".zip
+    curl -sLO https://static.palera.in/legacy/deps/gaster-"$os".zip
     unzip gaster-"$os".zip
     mv gaster "$dir"/
     rm -rf gaster gaster-"$os".zip
 fi
 
-# Check for pyimg4
-if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
+# Checks
+if [[ ! -s ~/.pyenv/bin/pyenv ]]; then
+    echo '[-] pyenv not installed. Press any key to install it, or press ctrl + c to cancel'
+    read -n 1 -s
+    curl https://pyenv.run | bash
+fi
+if [[ ! -s ~/.pyenv/versions/3.7.17/bin/python3 ]]; then
+    echo '[-] python3.7 not installed. Press any key to install it, or press ctrl + c to cancel'
+    read -n 1 -s
+    ~/.pyenv/bin/pyenv install 3.7.17
+fi
+if [[ ! -d venv ]]; then
     echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
     read -n 1 -s
-    python3 -m pip install pyimg4
+    ~/.pyenv/versions/3.7.17/bin/python3 -m venv venv
+fi
+if ! venv/bin/python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
+    venv/bin/python3 -m pip install pyimg4==0.7
 fi
 
 # ============
@@ -401,8 +431,8 @@ if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree"
     echo "!!! WARNING WARNING WARNING !!!"
     echo "This flag will add tweak support BUT WILL BE TETHERED."
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
-    echo "THIS WORKS ON 15.0-16.2"
-    echo "DO NOT GET ANGRY AT US IF YOUR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
+    echo "THIS ONLY WORKS ON 15.X"
+    echo "DO NOT GET ANGRY AT US IF UR DEVICE IS BORKED, IT'S YOUR OWN FAULT AND WE WARNED YOU"
     echo "DO YOU UNDERSTAND? TYPE 'Yes, do as I say' TO CONTINUE"
     read -r answer
     if [ "$answer" = 'Yes, do as I say' ]; then
@@ -444,11 +474,7 @@ if [ "$(get_device_mode)" = "ramdisk" ]; then
     # If a device is in ramdisk mode, perhaps iproxy is still running?
     _kill_if_running iproxy
     echo "[*] Rebooting device in SSH Ramdisk"
-    if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
-    else
-        "$dir"/iproxy 6413 22 &
-    fi
+    "$dir"/iproxy 6413 22 &
     sleep 2
     remote_cmd "/usr/sbin/nvram auto-boot=false"
     remote_cmd "/sbin/reboot"
@@ -464,6 +490,8 @@ if [ "$(get_device_mode)" = "normal" ]; then
         exit
     fi
     echo "Hello, $(_info normal ProductType) on $version!"
+
+    "$dir"/idevicepair pair
 
     echo "[*] Switching device into recovery mode..."
     "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
@@ -558,11 +586,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     fi
 
     # Execute the commands once the rd is booted
-    if [ "$os" = 'Linux' ]; then
-        sudo "$dir"/iproxy 6413 22 &
-    else
-        "$dir"/iproxy 6413 22 &
-    fi
+    "$dir"/iproxy 6413 22 &
 
     while ! (remote_cmd "echo connected" &> /dev/null); do
         sleep 1
@@ -687,9 +711,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     echo "[*] Patching kernelcache"
     mv kernelcache.release.* work/kernelcache
     if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
-        python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
+        venv/bin/python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
     else
-        python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
+        venv/bin/python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
     fi
     sleep 1
     remote_cp work/kcache.raw root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
@@ -707,9 +731,9 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     
     sleep 1
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
-        python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
+        venv/bin/python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
     else
-        python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
+        venv/bin/python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
     fi
     sleep 1
     remote_cp work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
@@ -776,23 +800,24 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
-        curl -LO https://static.palera.in/deps/loader.zip
-        unzip loader.zip -d .
-        unzip palera1n.ipa -d .
+        echo "[*] Downloading loader"
+        #curl -LO https://static.palera.in/artifacts/loader/rootful/palera1n.ipa
+        unzip ../../../palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
         rm -rf palera1n.zip loader.zip palera1n.ipa Payload
         
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
-        curl -L https://static.palera.in/deps/rootfs.zip -o rfs.zip
-        unzip rfs.zip -d .
+        echo "[*] Downloading jbinit files"
+        #curl -L https://static.palera.in/legacy/deps/rootfs.zip -o rfs.zip
+        unzip ../../../rfs.zip -d .
         unzip rootfs.zip -d .
-        rm rfs.zip rootfs.zip
+        rm -rf rfs.zip rootfs.zip
         cd ../../..
 
         # download binpack
-        mkdir -p other/rootfs/jbin/binpack
-        curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
+        #mkdir -p other/rootfs/jbin/binpack
+        #curl -L https://static.palera.in/binpack.tar -o other/rootfs/jbin/binpack/binpack.tar
 
         sleep 1
         remote_cp -r other/rootfs/* root@localhost:/mnt$di

@@ -1,7 +1,5 @@
 .DS_Store
 */.DS_Store
-binaries/Linux/gaster
-binaries/Darwin/gaster
 work
 rdwork
 boot*
@@ -19,4 +17,5 @@ other/rootfs/jbin/launchd
 logs
 .disclaimeragree
 .fs-*
-other/rootfs/jbin/binpack
+.disclaimeragree
+venv

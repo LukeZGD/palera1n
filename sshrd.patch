@@ -1,0 +1,38 @@
+15,21d14
+< # Check for pyimg4
+< if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
+<     echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
+<     read -n 1 -s
+<     python3 -m pip install pyimg4
+< fi
+< 
+25c18
+<     curl -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$oscheck".zip
+---
+>     curl -sLO https://static.palera.in/deps/gaster-"$oscheck".zip
+166,169c159,162
+<         curl -LO https://nightly.link/palera1n/loader/workflows/build/main/palera1n.zip
+<         mv palera1n.zip work/palera1n.zip
+<         unzip work/palera1n.zip -d work/loader
+<         unzip work/loader/palera1n.ipa -d work/loader/loader
+---
+>         mkdir -p work/loader
+>         #curl -LO https://static.palera.in/artifacts/loader/rootful/palera1n.ipa
+>         #mv palera1n.ipa work/loader
+>         unzip ../palera1n.ipa -d work/loader/loader
+186,189c179,182
+<         curl -LO https://nightly.link/palera1n/loader/workflows/build/main/palera1n.zip
+<         mv palera1n.zip work/palera1n.zip
+<         unzip work/palera1n.zip -d work/loader
+<         unzip work/loader/palera1n.ipa -d work/loader/loader
+---
+>         mkdir -p work/loader
+>         #curl -LO https://static.palera.in/artifacts/loader/rootful/palera1n.ipa
+>         #mv palera1n.ipa work/loader
+>         unzip ../palera1n.ipa -d work/loader/loader
+198,199c191,192
+< python3 -m pyimg4 im4p create -i work/ramdisk.dmg -o work/ramdisk.im4p -f rdsk
+< python3 -m pyimg4 img4 create -p work/ramdisk.im4p -m work/IM4M -o sshramdisk/ramdisk.img4
+---
+> ../venv/bin/python3 -m pyimg4 im4p create -i work/ramdisk.dmg -o work/ramdisk.im4p -f rdsk
+> ../venv/bin/python3 -m pyimg4 img4 create -p work/ramdisk.im4p -m work/IM4M -o sshramdisk/ramdisk.img4
